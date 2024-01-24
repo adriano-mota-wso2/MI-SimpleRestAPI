@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/stockquote" name="StockQuoteAPI" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="GET" uri-template="/view/{symbol}">
+        <inSequence>
+            <payloadFactory media-type="xml">
+                <format>
+                    <m0:getQuote xmlns:m0="http://services.samples">
+                        <m0:request>
+                            <m0:symbol>$1</m0:symbol>
+                        </m0:request>
+                    </m0:getQuote>
+                </format>
+                <args>
+                    <arg evaluator="xml" expression="get-property('uri.var.symbol')"/>
+                </args>
+            </payloadFactory>
+            <header name="Action" scope="default" value="urn:getQuote"/>
+            <send>
+                <endpoint>
+                    <address format="soap11" uri="http://localhost:9000/services/SimpleStockQuoteService">
+                        <suspendOnFailure>
+                            <initialDuration>-1</initialDuration>
+                            <progressionFactor>1</progressionFactor>
+                        </suspendOnFailure>
+                        <markForSuspension>
+                            <retriesBeforeSuspension>0</retriesBeforeSuspension>
+                        </markForSuspension>
+                    </address>
+                </endpoint>
+            </send>
+        </inSequence>
+        <outSequence>
+            <send/>
+        </outSequence>
+        <faultSequence/>
+    </resource>
+    <resource methods="POST" url-mapping="/order/*">
+        <inSequence>
+            <property name="FORCE_SC_ACCEPTED" scope="axis2" type="STRING" value="true"/>
+            <property name="OUT_ONLY" scope="default" type="STRING" value="true"/>
+            <header name="Action" scope="default" value="urn:placeOrder"/>
+            <send>
+                <endpoint>
+                    <address format="soap11" uri="http://localhost:9000/services/SimpleStockQuoteService">
+                        <suspendOnFailure>
+                            <initialDuration>-1</initialDuration>
+                            <progressionFactor>1</progressionFactor>
+                        </suspendOnFailure>
+                        <markForSuspension>
+                            <retriesBeforeSuspension>0</retriesBeforeSuspension>
+                        </markForSuspension>
+                    </address>
+                </endpoint>
+            </send>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>
